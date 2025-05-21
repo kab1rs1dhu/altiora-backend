@@ -1,0 +1,123 @@
+<!-- src/main/resources/templates/admin/edit-page.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Page</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 th:text="'Editing: ' + ${page.name}">Editing: Home</h2>
+            <a th:href="@{/admin/pages}" class="btn btn-secondary">
+                Back to Pages
+            </a>
+        </div>
+        <hr>
+        
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        Page Details
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Page Name</label>
+                            <input type="text" class="form-control" th:value="${page.name}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" th:value="${page.title}" disabled>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" rows="3" disabled th:text="${page.description}"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h3>Content Sections</h3>
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Section Key</th>
+                        <th>Content Preview</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:if="${page.contentSections.empty}">
+                        <td colspan="3" class="text-center">No content sections found</td>
+                    </tr>
+                    <tr th:each="entry : ${page.contentSections}">
+                        <td th:text="${entry.key}">heroTitle</td>
+                        <td>
+                            <div style="max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
+                                 th:text="${entry.value}">Content preview</div>
+                        </td>
+                        <td>
+                            <a th:href="@{/admin/content/edit(pageName=${page.name},sectionKey=${entry.key})}" 
+                               class="btn btn-sm btn-primary">
+                                Edit
+                            </a>
+                        </td>
+                        <!-- Modify the actions column in edit-page.html -->
+<td>
+    <div class="btn-group" role="group">
+        <a th:href="@{/admin/content/edit(pageName=${page.name},sectionKey=${entry.key})}" 
+           class="btn btn-sm btn-primary">
+            Edit
+        </a>
+        <button type="button" class="btn btn-sm btn-danger"
+                th:attr="data-page-name=${page.name},data-section-key=${entry.key}"
+                onclick="confirmDeleteSection(this)">
+            Delete
+        </button>
+    </div>
+</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- Modify src/main/resources/templates/admin/edit-page.html -->
+<!-- Add this after the h3 Content Sections heading -->
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Content Sections</h3>
+    <a th:href="@{/admin/pages/{name}/sections/new(name=${page.name})}" class="btn btn-primary btn-sm">
+        <i class="bi bi-plus"></i> New Section
+    </a>
+</div>
+<!-- Add to the bottom of edit-page.html, before closing body tag -->
+<script>
+    function confirmDeleteSection(button) {
+        const pageName = button.getAttribute('data-page-name');
+        const sectionKey = button.getAttribute('data-section-key');
+        
+        if (confirm('Are you sure you want to delete this section? This action cannot be undone.')) {
+            fetch(`/api/admin/section?pageName=${pageName}&sectionKey=${sectionKey}`, {
+                method: 'DELETE'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page
+                    window.location.reload();
+                } else {
+                    alert(data.error || 'An error occurred while deleting the section.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the section.');
+            });
+        }
+    }
+</script>
+</body>
+</html>

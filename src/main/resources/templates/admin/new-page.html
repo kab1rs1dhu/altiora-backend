@@ -1,0 +1,48 @@
+<!-- src/main/resources/templates/admin/new-page.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Page</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <h2>Create New Page</h2>
+        <hr>
+        
+        <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}">
+            Error message
+        </div>
+        
+        <form th:action="@{/admin/pages/new}" method="post" th:object="${page}">
+            <div class="mb-3">
+                <label for="name" class="form-label">Page Name</label>
+                <input type="text" class="form-control" id="name" th:field="*{name}" required
+                       placeholder="e.g., about-us (use hyphens, no spaces)">
+                <div class="form-text">This will be used in URLs and API calls. Use lowercase with hyphens.</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="title" class="form-label">Page Title</label>
+                <input type="text" class="form-control" id="title" th:field="*{title}" required
+                       placeholder="e.g., About Us">
+            </div>
+            
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" th:field="*{description}" rows="3"
+                          placeholder="Brief description of the page"></textarea>
+            </div>
+            
+            <div class="mb-3">
+                <p>Content sections can be added after creating the page.</p>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a th:href="@{/admin/pages}" class="btn btn-secondary me-md-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">Create Page</button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

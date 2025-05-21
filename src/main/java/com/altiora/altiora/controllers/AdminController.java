@@ -1,5 +1,6 @@
 package com.altiora.altiora.controllers;
 
+import com.altiora.altiora.DTO.ContentSectionDTO;
 import com.altiora.altiora.DTO.ContentUpdateDTO;
 import com.altiora.altiora.DTO.PageCreateDTO;
 import com.altiora.altiora.model.Page;
@@ -83,4 +84,47 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
+
+    // src/main/java/com/altiora/altiora/controllers/AdminController.java (update)
+
+// Add this method to the existing AdminController
+@PostMapping("/section")
+public ResponseEntity<?> createSection(@RequestBody ContentSectionDTO sectionDTO, 
+                                      @RequestParam String pageName) {
+    try {
+        contentService.addSectionToPage(pageName, sectionDTO);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    } catch (EntityNotFoundException e) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    } catch (Exception e) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+}
+
+// Add to AdminController.java
+
+@DeleteMapping("/section")
+public ResponseEntity<?> deleteSection(@RequestParam String pageName, 
+                                      @RequestParam String sectionKey) {
+    try {
+        contentService.deleteSection(pageName, sectionKey);
+        Map<String, Object> response = new HashMap<>();
+        response.put("success", true);
+        return ResponseEntity.ok(response);
+    } catch (EntityNotFoundException e) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
+    } catch (Exception e) {
+        Map<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    }
+}
 }

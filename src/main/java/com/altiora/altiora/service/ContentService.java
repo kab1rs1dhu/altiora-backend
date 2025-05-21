@@ -129,4 +129,39 @@ public class ContentService {
                 .map(Page::getName)
                 .collect(Collectors.toList());
     }
+
+    // src/main/java/com/altiora/altiora/service/ContentService.java (update)
+
+// Add this method to your existing ContentService
+@Transactional
+public void addSectionToPage(String pageName, ContentSectionDTO sectionDTO) {
+    Page page = pageRepository.findByName(pageName)
+            .orElseThrow(() -> new EntityNotFoundException("Page not found with name: " + pageName));
+    
+    // Check if section already exists
+    boolean exists = contentSectionRepository.findByPageNameAndSectionKey(pageName, sectionDTO.getSectionKey()).isPresent();
+    if (exists) {
+        throw new IllegalArgumentException("Section with key '" + sectionDTO.getSectionKey() + "' already exists for page '" + pageName + "'");
+    }
+    
+    ContentSection section = new ContentSection();
+    section.setPage(page);
+    section.setSectionKey(sectionDTO.getSectionKey());
+    section.setContent(sectionDTO.getContent());
+    section.setContentType(sectionDTO.getContentType());
+    
+    contentSectionRepository.save(section);
+}
+
+// Add to ContentService.java
+
+@Transactional
+public void deleteSection(String pageName, String sectionKey) {
+    ContentSection section = contentSectionRepository
+            .findByPageNameAndSectionKey(pageName, sectionKey)
+            .orElseThrow(() -> new EntityNotFoundException(
+                    "Section with key '" + sectionKey + "' not found for page '" + pageName + "'"));
+    
+    contentSectionRepository.delete(section);
+}
 }

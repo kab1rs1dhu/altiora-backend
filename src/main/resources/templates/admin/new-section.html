@@ -1,0 +1,116 @@
+<!-- src/main/resources/templates/admin/new-section.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>New Content Section</title>
+</head>
+<body>
+    <div th:fragment="content">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Add New Content Section</h2>
+            <a th:href="@{/admin/pages/{name}(name=${pageName})}" class="btn btn-secondary">
+                Back to Page
+            </a>
+        </div>
+        <hr>
+        
+        <div id="alertError" class="alert alert-danger d-none">
+            An error occurred while saving the section.
+        </div>
+        
+        <form id="newSectionForm">
+            <input type="hidden" id="pageName" name="pageName" th:value="${pageName}">
+            
+            <div class="mb-3">
+                <label for="sectionKey" class="form-label">Section Key</label>
+                <input type="text" class="form-control" id="sectionKey" name="sectionKey" required
+                       placeholder="e.g., heroTitle, services, whyChoosePoints">
+                <div class="form-text">This will be used to access the content. Use camelCase without spaces.</div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="contentType" class="form-label">Content Type</label>
+                <select class="form-select" id="contentType" name="contentType">
+                    <option value="TEXT">Text</option>
+                    <option value="RICH_TEXT">Rich Text</option>
+                    <option value="JSON">JSON</option>
+                    <option value="HTML">HTML</option>
+                </select>
+            </div>
+            
+            <div class="mb-3">
+                <label for="content" class="form-label">Content</label>
+                <textarea class="form-control" id="content" name="content" rows="10" required></textarea>
+            </div>
+            
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a th:href="@{/admin/pages/{name}(name=${pageName})}" class="btn btn-secondary me-md-2">Cancel</a>
+                <button type="submit" class="btn btn-primary">Save Section</button>
+            </div>
+        </form>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.getElementById('newSectionForm');
+            const alertError = document.getElementById('alertError');
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const pageName = document.getElementById('pageName').value;
+                const sectionKey = document.getElementById('sectionKey').value;
+                const contentType = document.getElementById('contentType').value;
+                const content = document.getElementById('content').value;
+                
+                // Create section data
+                const sectionData = {
+                    sectionKey: sectionKey,
+                    content: content,
+                    contentType: contentType
+                };
+                
+                // Send API request
+                fetch(`/api/admin/section?pageName=${pageName}`, {
+                    method: 'POST',
+                    headers: {
+                        <!-- src/main/resources/templates/admin/new-section.html (continued) -->
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(sectionData)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Redirect to the page edit view
+                        window.location.href = `/admin/pages/${pageName}`;
+                    } else {
+                        // Show error
+                        alertError.classList.remove('d-none');
+                        alertError.textContent = data.error || 'An error occurred while saving the section.';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alertError.classList.remove('d-none');
+                    alertError.textContent = 'An error occurred while saving the section.';
+                });
+            });
+            
+            // Add event listener to content type to help with formatting
+            document.getElementById('contentType').addEventListener('change', function(e) {
+                const contentType = e.target.value;
+                const contentTextarea = document.getElementById('content');
+                
+                if (contentType === 'JSON') {
+                    // Provide a template for JSON
+                    if (contentTextarea.value.trim() === '') {
+                        contentTextarea.value = '[\n  {\n    "key": "value"\n  }\n]';
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
