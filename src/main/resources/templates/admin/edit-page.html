@@ -14,18 +14,7 @@
         </div>
         <hr>
         
-        <!-- Debug information - helps identify issues -->
-        <div class="alert alert-info mb-3">
-            <strong>Debug Info:</strong> 
-            <div>Page Name: <span th:text="${page.name}">-</span></div>
-            <div>Page Title: <span th:text="${page.title}">-</span></div>
-            <div>Page Description: <span th:text="${#strings.abbreviate(page.description,100)}">-</span></div>
-            <div>Content Sections: 
-                <span th:if="${page.contentSections == null}">null</span>
-                <span th:if="${page.contentSections != null}" th:text="${page.contentSections.size()}">0</span>
-            </div>
-        </div>
-        
+        <!-- Page details section -->
         <div class="row mb-4">
             <div class="col-md-12">
                 <div class="card">
@@ -35,15 +24,15 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <label class="form-label">Page Name</label>
-                            <input type="text" class="form-control" th:value="${page.name}" disabled>
+                            <input type="text" class="form-control" th:value="${page.name}" readonly>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Title</label>
-                            <input type="text" class="form-control" th:value="${page.title}" disabled>
+                            <input type="text" class="form-control" th:value="${page.title}" readonly>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Description</label>
-                            <textarea class="form-control" rows="3" disabled th:text="${page.description}"></textarea>
+                            <textarea class="form-control" rows="3" readonly th:text="${page.description}"></textarea>
                         </div>
                     </div>
                 </div>
@@ -52,23 +41,13 @@
         
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h3>Content Sections</h3>
-            <a th:href="@{/admin/pages/{name}/sections/new(name=${page.name})}" class="btn btn-primary btn-sm">
-                <i class="bi bi-plus"></i> New Section
+            <a th:href="@{/admin/pages/{name}/sections/new(name=${page.name})}" class="btn btn-success">
+                <i class="bi bi-plus"></i> Add New Section
             </a>
         </div>
         
-        <!-- Display a message if contentSections is null -->
-        <div class="alert alert-warning" th:if="${page.contentSections == null}">
-            No content sections found. Please click "New Section" to add content.
-        </div>
-        
-        <!-- Display a message if contentSections is empty -->
-        <div class="alert alert-warning" th:if="${page.contentSections != null and page.contentSections.isEmpty()}">
-            No content sections found. Please click "New Section" to add content.
-        </div>
-        
-        <!-- Only show the table if there are content sections -->
-        <div class="table-responsive" th:if="${page.contentSections != null and !page.contentSections.isEmpty()}">
+        <!-- Content sections table -->
+        <div class="table-responsive">
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
@@ -78,7 +57,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr th:each="entry : ${page.contentSections}">
+                    <!-- Empty state message -->
+                    <tr th:if="${page.contentSections == null || page.contentSections.isEmpty()}">
+                        <td colspan="3" class="text-center">No content sections found. Please add a new section.</td>
+                    </tr>
+                    
+                    <!-- Content section rows -->
+                    <tr th:each="entry : ${page.contentSections}" th:if="${page.contentSections != null && !page.contentSections.isEmpty()}">
                         <td th:text="${entry.key}">heroTitle</td>
                         <td>
                             <div style="max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"
@@ -103,7 +88,7 @@
         </div>
     </div>
     
-    <!-- JavaScript for deletion confirmation -->
+    <!-- JavaScript for section deletion -->
     <script>
         function confirmDeleteSection(button) {
             const pageName = button.getAttribute('data-page-name');
@@ -128,7 +113,6 @@
                 .then(data => {
                     console.log('Delete response:', data);
                     if (data.success) {
-                        // Reload the page
                         window.location.reload();
                     } else {
                         alert(data.error || 'An error occurred while deleting the section.');
@@ -141,12 +125,9 @@
             }
         }
         
-        // Log page data for debugging
+        // Add page load event to check data
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('Page data loaded:', {
-                name: document.querySelector('input[disabled]').value,
-                contentSections: document.querySelectorAll('tbody tr').length
-            });
+            console.log('Page loaded - checking data status');
         });
     </script>
 </body>
