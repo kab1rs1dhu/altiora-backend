@@ -1,113 +1,152 @@
-<!-- src/main/resources/templates/admin/edit-content.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Content</title>
+    <style>
+        /* Mobile-friendly styles */
+        .content-textarea {
+            min-height: 250px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .btn-toolbar {
+            margin-top: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        @media (max-width: 768px) {
+            .content-textarea {
+                min-height: 200px;
+                font-size: 13px;
+            }
+            .btn-toolbar {
+                flex-direction: column;
+                width: 100%;
+            }
+            .btn-toolbar .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+        }
+        .json-editor {
+            position: relative;
+            height: 400px;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            font-family: monospace;
+        }
+        .form-label {
+            font-weight: 600;
+        }
+    </style>
 </head>
 <body>
     <div th:fragment="content">
-        <div class="d-flex justify-content-between align-items-center">
-            <h2>Edit Content Section</h2>
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-3">
+            <h2 class="mb-2 mb-md-0">Edit Content Section</h2>
             <a th:href="@{/admin/pages/{name}(name=${content.pageName})}" class="btn btn-secondary">
-                Back to Page
+                <i class="bi bi-arrow-left"></i> Back to Page
             </a>
         </div>
         <hr>
         
-        <div th:if="${param.error}" class="alert alert-danger" th:text="${param.error}">
-            Error message
+        <div id="alertError" th:class="${param.error != null ? 'alert alert-danger' : 'alert alert-danger d-none'}">
+            <span th:text="${param.error != null ? param.error : 'An error occurred while saving the content.'}">Error message</span>
         </div>
         
-        <form th:action="@{/admin/content/edit}" method="post" th:object="${content}">
+        <form id="editContentForm" th:action="@{/admin/content/edit}" method="post" th:object="${content}">
             <input type="hidden" th:field="*{pageName}">
+            <input type="hidden" th:field="*{sectionKey}">
             
-            <div class="mb-3">
-                <label class="form-label">Page Name</label>
-                <input type="text" class="form-control" th:value="*{pageName}" readonly>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Page</label>
+                    <input type="text" class="form-control" th:value="*{pageName}" disabled>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Section Key</label>
+                    <input type="text" class="form-control" th:value="*{sectionKey}" disabled>
+                </div>
             </div>
             
             <div class="mb-3">
-                <label class="form-label">Section Key</label>
-                <input type="text" class="form-control" th:field="*{sectionKey}" readonly>
+                <label for="content" class="form-label">Content</label>
+                <div class="content-editor-container">
+                    <!-- Regular textarea -->
+                    <textarea class="form-control content-textarea" id="content" th:field="*{content}" 
+                              rows="15" required></textarea>
+                    
+                    <!-- JSON Editor (only shown for JSON content) -->
+                    <div id="json-editor" class="json-editor d-none"></div>
+                </div>
+                <div class="form-text mt-2">
+                    <div id="contentType">Editing text content. Save changes when done.</div>
+                    <div id="jsonInfo" class="d-none text-info mt-1">
+                        <i class="bi bi-info-circle"></i> 
+                        This appears to be JSON content. The editor has formatted it for better readability.
+                        Make sure to maintain valid JSON format.
+                    </div>
+                </div>
             </div>
             
-<!-- Replace the content textarea in edit-content.html with this -->
-<div class="mb-3">
-    <label for="content" class="form-label">Content</label>
-    
-    <!-- Regular textarea (hidden for JSON) -->
-    <textarea class="form-control" id="content" th:field="*{content}" 
-              rows="10" required th:attr="data-content-type=${contentType}"></textarea>
-    
-    <!-- JSON Editor (shown only for JSON) -->
-    <div id="json-editor" style="display: none;"></div>
-</div>
-
-<!-- Add this script at the bottom of edit-content.html -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const contentTextarea = document.getElementById('content');
-        const contentValue = contentTextarea.value;
-        const jsonEditor = document.getElementById('json-editor');
-        
-        // Check if content appears to be JSON
-        let isJson = false;
-        try {
-            const trimmedContent = contentValue.trim();
-            if (trimmedContent.startsWith('{') || trimmedContent.startsWith('[')) {
-                // Try to parse it
-                JSON.parse(trimmedContent);
-                isJson = true;
-            }
-        } catch (e) {
-            // Not valid JSON, keep using the textarea
-            console.log('Content is not valid JSON:', e);
-        }
-        
-        if (isJson) {
-            // Hide textarea, show JSON editor
-            contentTextarea.style.display = 'none';
-            jsonEditor.style.display = 'block';
-            
-            // Initialize Ace editor
-            const editor = ace.edit("json-editor");
-            editor.setTheme("ace/theme/monokai");
-            editor.session.setMode("ace/mode/json");
-            editor.setValue(contentValue, -1); // -1 moves cursor to start
-            
-            // Update textarea before form submit
-            const form = contentTextarea.closest('form');
-            form.addEventListener('submit', function() {
-                contentTextarea.value = editor.getValue();
-            });
-        }
-    });
-</script>
-            
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a th:href="@{/admin/pages/{name}(name=*{pageName})}" class="btn btn-secondary me-md-2">Cancel</a>
-                <button type="submit" class="btn btn-primary">Save Changes</button>
+            <div class="btn-toolbar">
+                <a th:href="@{/admin/pages/{name}(name=*{pageName})}" class="btn btn-secondary">
+                    <i class="bi bi-x"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Save Changes
+                </button>
             </div>
         </form>
     </div>
     
-    <!-- Rich text editor for JSON content -->
     <script>
-        // Simple check to determine if content is JSON
         document.addEventListener('DOMContentLoaded', function() {
-            const contentTextarea = document.querySelector('.content-editor');
+            const contentTextarea = document.getElementById('content');
+            const jsonEditor = document.getElementById('json-editor');
+            const jsonInfo = document.getElementById('jsonInfo');
+            const contentTypeInfo = document.getElementById('contentType');
+            
             if (!contentTextarea) return;
             
+            // Check if content is JSON
             try {
-                const content = contentTextarea.value;
-                if (content.trim().startsWith('[') || content.trim().startsWith('{')) {
-                    // It's likely JSON, add syntax highlighting or a JSON editor
-                    // For this example, we'll just add a helper message
-                    const helperText = document.createElement('div');
-                    helperText.className = 'form-text text-warning mb-2';
-                    helperText.innerHTML = 'This appears to be JSON content. Make sure to maintain valid JSON format.';
-                    contentTextarea.parentNode.insertBefore(helperText, contentTextarea);
+                const content = contentTextarea.value.trim();
+                if ((content.startsWith('{') && content.endsWith('}')) || 
+                    (content.startsWith('[') && content.endsWith(']'))) {
+                    
+                    // Try to parse and format the JSON
+                    try {
+                        const formattedJson = JSON.stringify(JSON.parse(content), null, 2);
+                        contentTextarea.value = formattedJson;
+                        
+                        // Show JSON info
+                        jsonInfo.classList.remove('d-none');
+                        contentTypeInfo.textContent = 'Editing JSON content. Format will be preserved.';
+                        
+                        // If we have Ace editor available, use it
+                        if (typeof ace !== 'undefined') {
+                            contentTextarea.classList.add('d-none');
+                            jsonEditor.classList.remove('d-none');
+                            
+                            const editor = ace.edit("json-editor");
+                            editor.setTheme("ace/theme/monokai");
+                            editor.session.setMode("ace/mode/json");
+                            editor.setValue(formattedJson, -1);
+                            
+                            // Update textarea before form submit
+                            const form = contentTextarea.closest('form');
+                            form.addEventListener('submit', function() {
+                                contentTextarea.value = editor.getValue();
+                            });
+                        }
+                    } catch (e) {
+                        console.log('Content appears to be JSON but is not valid:', e);
+                        contentTypeInfo.textContent = 'Warning: Content looks like JSON but has formatting errors.';
+                    }
                 }
             } catch (e) {
                 // Not JSON or error parsing, just continue

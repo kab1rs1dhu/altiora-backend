@@ -1,45 +1,92 @@
-<!-- src/main/resources/templates/admin/dashboard.html -->
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard</title>
+    <style>
+        .dashboard-card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .dashboard-count {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+        .quick-links {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        @media (max-width: 768px) {
+            .dashboard-card {
+                margin-bottom: 1rem;
+            }
+        }
+    </style>
 </head>
 <body>
     <div th:fragment="content">
-        <h2>Dashboard</h2>
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+            <h2 class="mb-0">Dashboard</h2>
+            <span class="badge bg-primary">Admin Area</span>
+        </div>
         <hr>
         
-        <div class="row">
-            <div class="col-md-4">
-                <div class="card">
-                    <div class="card-body">
+        <div class="row mb-4">
+            <div class="col-md-4 mb-3 mb-md-0">
+                <div class="card dashboard-card h-100">
+                    <div class="card-body text-center">
+                        <div class="mb-3">
+                            <i class="bi bi-file-earmark-text" style="font-size: 2.5rem; color: #1a73e8;"></i>
+                        </div>
                         <h5 class="card-title">Total Pages</h5>
-                        <p class="card-text display-4" th:text="${pageNames.size()}">0</p>
-                        <a th:href="@{/admin/pages}" class="btn btn-primary">Manage Pages</a>
+                        <p class="dashboard-count" th:text="${pageNames.size()}">0</p>
+                        <a th:href="@{/admin/pages}" class="btn btn-primary">
+                            <i class="bi bi-list"></i> Manage Pages
+                        </a>
                     </div>
                 </div>
             </div>
             
             <div class="col-md-8">
-                <div class="card">
+                <div class="card dashboard-card h-100">
                     <div class="card-header">
-                        Quick Links
+                        <i class="bi bi-lightning me-2"></i> Quick Links
                     </div>
                     <div class="card-body">
-                        <div class="list-group">
-                            <a th:href="@{/admin/pages/new}" class="list-group-item list-group-item-action">
+                        <div class="list-group quick-links">
+                            <a th:href="@{/admin/pages/new}" class="list-group-item list-group-item-action d-flex align-items-center">
+                                <i class="bi bi-plus-circle me-2"></i>
                                 Create New Page
                             </a>
                             <a th:each="pageName : ${pageNames}" 
                                th:href="@{/admin/pages/{name}(name=${pageName})}" 
-                               class="list-group-item list-group-item-action">
-                                Edit <span th:text="${pageName}">Page</span>
+                               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-pencil me-2"></i>
+                                    Edit <span th:text="${pageName}">Page</span>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">Edit</span>
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
+        
+        <!-- Quick tips -->
+        <div class="alert alert-info">
+            <h5><i class="bi bi-info-circle me-2"></i>Admin Tips</h5>
+            <ul class="mb-0">
+                <li>Use the sidebar to navigate between pages</li>
+                <li>On mobile, tap the menu button in the top-left corner</li>
+                <li>You can edit content sections to update your website</li>
+                <li>Remember to log out when you're done</li>
+            </ul>
         </div>
     </div>
 </body>
