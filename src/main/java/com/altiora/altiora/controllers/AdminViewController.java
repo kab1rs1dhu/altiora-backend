@@ -100,4 +100,14 @@ public String newSection(@PathVariable String pageName, Model model) {
     model.addAttribute("pageName", pageName);
     return "admin/new-section";
 }
+
+@PostMapping("/login")
+public String login(@RequestParam String username, @RequestParam String password) {
+    // Implement your authentication logic here
+    if (username.equals("admin") && password.equals("password")) {
+        return "redirect:/admin/dashboard";
+    } else {
+        return "redirect:/admin/login?error=Invalid credentials";
+    }
+}
 }
